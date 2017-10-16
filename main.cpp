@@ -20,7 +20,7 @@ using namespace std;
 // x nand y
 // x nor y
 
-static double getError(vector<double> &inputs, vector<double> &outputs)
+static double getError(vector<double> &inputs, vector<double> &outputs, network &network)
 {
 	double tmpError = 0;
 	double accError = 0;
@@ -45,24 +45,9 @@ static double getError(vector<double> &inputs, vector<double> &outputs)
 	tmpError = ((x || y) == false) ? fabs(outputs[7] - 1) 		: fabs(outputs[7]);
 	accError += tmpError * tmpError;
 
-	return accError;
-}
+	accError += (network.computationOrder.size() < 2 ? 0 : network.computationOrder.size()) * 0.1;
 
-static void printValues(vector<double> &inputs, vector<double> &outputs)
-{
-	return;
-	cout << inputs[0] << ' ';
-	cout << inputs[1] << ' ';
-	cout << outputs[0] << ' ';
-	cout << outputs[1] << ' ';
-	cout << outputs[2] << ' ';
-	cout << outputs[3] << ' ';
-	cout << outputs[4] << ' ';
-	cout << outputs[5] << ' ';
-	cout << outputs[6] << ' ';
-	cout << outputs[7] << ' ';
-	cout << "Error: " << getError(inputs, outputs);
-	cout << endl;
+	return accError;
 }
 
 vector<double> inputs;
@@ -76,33 +61,28 @@ void networkCompute(network &net)
 	inputs[2] = 1.0;
 
 	net.compute(inputs, outputs);
-	printValues(inputs, outputs);
-	error += getError(inputs, outputs);
+	error += getError(inputs, outputs, net);
 
 	inputs[0] = 1.0;
 	inputs[1] = 0.0;
 	inputs[2] = 1.0;
 
 	net.compute(inputs, outputs);
-	printValues(inputs, outputs);
-	error += getError(inputs, outputs);
+	error += getError(inputs, outputs, net);
 
 	inputs[0] = 0.0;
 	inputs[1] = 1.0;
 	inputs[2] = 1.0;
 
 	net.compute(inputs, outputs);
-	printValues(inputs, outputs);
-	error += getError(inputs, outputs);
+	error += getError(inputs, outputs, net);
 
 	inputs[0] = 1.0;
 	inputs[1] = 1.0;
 	inputs[2] = 1.0;
 
 	net.compute(inputs, outputs);
-	printValues(inputs, outputs);
-	error += getError(inputs, outputs);
-//	cout << "Total error: " << error << endl;
+	error += getError(inputs, outputs, net);
 	net.error = error;
 }
 
@@ -129,7 +109,6 @@ int main()
 		for(int i = 0; i < initialNetworkSize; i++){
 			for(int child = 0; child < 4; child++){
 				networks.push_back(networks[i]);
-//				networks[networks.size() - 1].mutate();
 			}
 		}
 
@@ -139,15 +118,20 @@ int main()
 		}
 
 		sort(networks.begin(), networks.end());
+		// Resample...
+                // TODO: Implement proper resampling..
+
 		networks.resize(initialNetworkSize);
 
 		cout << generations << ' ';
-		cout << networks[0].neurons.size() - 10 << ' ';
+		cout << networks[0].neurons.size() - 11 << ' ';
 		for(int i = 0; i < 1; i++){
 			cout << networks[i].error << ' ';
 		}
 		cout << endl;
 	}
+
+	networks[0].printNetwork();
 
 	return 0;
 }

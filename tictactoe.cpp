@@ -94,15 +94,16 @@ void toggleInputs(vector<double> &inputs)
 			i = 1.0;
 		}
 	}
+	inputs[9] = 1.0;
 }
 
 void playGame(network &opp1, network &opp2)
 {
 	int winner;
 	bool gameGoing = true;
-	vector<double> inputs(9, 0.0);
+	vector<double> inputs(10, 0.0);
 	vector<double> outputs(9, 0.0);
-	//inputs[9] = 1.0f;
+	inputs[9] = 1.0f;
 
 	while(gameGoing){
 		// Player 1
@@ -144,9 +145,9 @@ void playHuman(network &opp1)
 	while(true){
 		int winner;
 		bool gameGoing = true;
-		vector<double> inputs(9, 0.0);
+		vector<double> inputs(10, 0.0);
 		vector<double> outputs(9, 0.0);
-		//inputs[9] = 1.0f;
+		inputs[9] = 1.0f;
 
 		while(gameGoing){
 			// Player 1
@@ -202,7 +203,7 @@ int main()
 	rand();
 	vector<network> networks;
 
-	network net(9, 9);
+	network net(10, 9);
 
 	for(int i = 0; i < 100; i++){
 		networks.push_back(net);

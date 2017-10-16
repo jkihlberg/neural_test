@@ -10,14 +10,31 @@ public:
 	neuron(bool a_IsInput, bool a_IsOutput) :
 	 input(a_IsInput),
 	 output(a_IsOutput),
+	 computed(false),
 	 value(0.0),
 	 bias(0.0)
 	{
+		if(input){
+			computed = true;
+		}
 		// Empty
+	}
+
+	void print() const
+	{
+		cout << "Neuron:" << endl;
+		for(const auto&link : into){
+			cout << "From: " << link.first << " weight " << link.second << endl;
+		}
 	}
 
 	double getValue() const
 	{
+		if(!computed){
+			cout << "Error, not computed" << endl;
+			print();
+			exit(0);
+		}
 		return value;
 	}
 
@@ -36,6 +53,7 @@ public:
 		if(!input) {
 			setValue(0.0);
 		}
+		computed = false;
 	}
 
 	void compute(const vector<neuron> &neurons)
@@ -45,7 +63,8 @@ public:
 			value += neurons[i.first].getValue() * i.second;
 		}
 
-		value = 1.0 / (1.0 + exp(-1.0 * value));
+		value = 2.0 / (1.0 + exp(-1.0 * value));
+		computed = true;
 	}
 
 	void addInto(int from, double weight)
@@ -66,6 +85,7 @@ public:
 private:
 	bool input;
 	bool output;
+	bool computed;
 	double value;
 	double bias;
 };

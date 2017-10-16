@@ -54,16 +54,20 @@ public:
 		assert(inputs.size() == inputNeurons.size());
 		outputs.clear();
 
+		for (auto& i : computationOrder) {
+			neurons[i].clear();
+		}
+
 		for (int i = 0; i < inputs.size(); i++) {
 			neurons[inputNeurons[i]].setValue(inputs[i]);
 		}
 
 		for (auto& i : computationOrder) {
-			//cout << "Computing: " << i << endl;
 			neurons[i].compute(neurons);
 		}
 
 		for (int i = 0; i < outputNeurons.size(); i++) {
+			neurons[outputNeurons[i]].compute(neurons);
 			outputs.push_back(neurons[outputNeurons[i]].getValue());
 		}
 	}
@@ -100,10 +104,7 @@ public:
 
 	void addError(double a_Error)
 	{
-#pragma omp critical(add_networ_error)
-		{
-			error += a_Error;
-		}
+		error += a_Error;
 	}
 //private:
 	void pointMutate()
@@ -124,6 +125,7 @@ public:
 	{
 		int from = rand() % neurons.size();
 		int to = rand() % neurons.size();
+		double weight = randUni() * 2 - 1;
 
 		if(from == to) {
 			return;
@@ -149,7 +151,12 @@ public:
 			to = temp;
 		}
 
-		std::vector<int>::iterator itFrom = find(computationOrder.begin(), computationOrder.end(), to);
+		if(neurons[from].isInput() || neurons[to].isOutput()){
+			addLink(from, to, weight);
+			return;
+		}
+
+		std::vector<int>::iterator itFrom = find(computationOrder.begin(), computationOrder.end(), from);
 		std::vector<int>::iterator itTo = find(computationOrder.begin(), computationOrder.end(), to);
 
 		if(itFrom > itTo){
@@ -158,7 +165,6 @@ public:
 			to = temp;
 		}
 
-		double weight = randUni() * 2 - 1;
 		addLink(from, to, weight);
 	}
 
@@ -191,7 +197,7 @@ public:
 			to = temp;
 		}
 
-		std::vector<int>::iterator itFrom = find(computationOrder.begin(), computationOrder.end(), to);
+		std::vector<int>::iterator itFrom = find(computationOrder.begin(), computationOrder.end(), from);
 		std::vector<int>::iterator itTo = find(computationOrder.begin(), computationOrder.end(), to);
 
 		if(itFrom > itTo){
@@ -219,11 +225,20 @@ public:
 			outputNeurons.push_back(neurons.size());
 		}
 
-		if(!a_Neuron.isInput()){
-			computationOrder.push_back(neurons.size());
+		neurons.push_back(a_Neuron);
+	}
+
+	void printNetwork()
+	{
+		for(const auto& order: computationOrder){
+			cout << "Num: " << order << endl;
+			neurons[order].print();
 		}
 
-		neurons.push_back(a_Neuron);
+		for(const auto& outputs: outputNeurons){
+			cout << "Num: " << outputs << endl;
+			neurons[outputs].print();
+		}
 	}
 
 	double randUni() { return (double) rand() / RAND_MAX; }
